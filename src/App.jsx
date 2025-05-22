@@ -11,7 +11,7 @@ function App() {
   useEffect(() => {
     const fetchButtonPresses = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/button-presses")
+        const response = await fetch("https://software-arduino-back.vercel.app/api/button-presses")
         if (!response.ok) {
           throw new Error("Error al obtener datos")
         }
