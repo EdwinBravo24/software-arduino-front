@@ -15,14 +15,14 @@ function App() {
       if (button) {
         try {
           // Enviar botón al backend
-          await fetch("http://localhost:3001/api/simulate-button", {
+          await fetch("https://software-arduino-back.vercel.app/api/simulate-button", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ button }),
           });
 
           // Obtener datos actualizados
-          const response = await fetch("http://localhost:3001/api/button-presses");
+          const response = await fetch("https://software-arduino-back.vercel.app/button-presses");
           const data = await response.json();
           setButtonData(data);
         } catch (error) {
