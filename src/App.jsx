@@ -22,7 +22,7 @@ function App() {
           });
 
           // Obtener datos actualizados
-          const response = await fetch("https://software-arduino-back.vercel.app/button-presses");
+          const response = await fetch("https://software-arduino-back.vercel.app/api/button-presses");
           const data = await response.json();
           setButtonData(data);
         } catch (error) {
