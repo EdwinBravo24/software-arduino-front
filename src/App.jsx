@@ -1,102 +1,51 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import "./App.css"
+import { useEffect, useState } from "react";
 
 function App() {
-  const [buttonPresses, setButtonPresses] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [buttonData, setButtonData] = useState([]);
 
   useEffect(() => {
-    const fetchButtonPresses = async () => {
-      try {
-        const response = await fetch("https://software-arduino-back.vercel.app/api/button-presses")
-        if (!response.ok) {
-          throw new Error("Error al obtener datos")
+    const handleKeyDown = async (event) => {
+      let button = null;
+
+      if (event.key === "ArrowUp") button = "UP";
+      else if (event.key === "ArrowDown") button = "DOWN";
+      else if (event.key === "ArrowLeft") button = "LEFT";
+      else if (event.key === "ArrowRight") button = "RIGHT";
+
+      if (button) {
+        try {
+          // Enviar botón al backend
+          await fetch("http://localhost:3001/api/simulate-button", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ button }),
+          });
+
+          // Obtener datos actualizados
+          const response = await fetch("http://localhost:3001/api/button-presses");
+          const data = await response.json();
+          setButtonData(data);
+        } catch (error) {
+          console.error("Error al enviar o recibir datos:", error);
         }
-        const data = await response.json()
-        setButtonPresses(data)
-        setLoading(false)
-      } catch (err) {
-        setError(err.message)
-        setLoading(false)
       }
-    }
+    };
 
-    fetchButtonPresses()
-
-    // Configurar actualización en tiempo real
-    const interval = setInterval(fetchButtonPresses, 2000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const formatDateTime = (dateTimeString) => {
-    const date = new Date(dateTimeString)
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
-  }
-
-  if (loading) {
-    return <div className="loading">Cargando datos...</div>
-  }
-
-  if (error) {
-    return <div className="error">Error: {error}</div>
-  }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
-    <div className="container">
-      <h1>Registro de Botones Arduino</h1>
-
-      <div className="button-grid">
-        <div className="button-cell left">
-          <button className="button-display">←</button>
-          <p>Izquierda</p>
-        </div>
-        <div className="button-cell up">
-          <button className="button-display">↑</button>
-          <p>Arriba</p>
-        </div>
-        <div className="button-cell down">
-          <button className="button-display">↓</button>
-          <p>Abajo</p>
-        </div>
-        <div className="button-cell right">
-          <button className="button-display">→</button>
-          <p>Derecha</p>
-        </div>
-      </div>
-
-      <div className="table-container">
-        <h2>Historial de Botones Presionados</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Botón</th>
-              <th>Hora</th>
-            </tr>
-          </thead>
-          <tbody>
-            {buttonPresses.length > 0 ? (
-              buttonPresses.map((press, index) => (
-                <tr key={index} className={`button-${press.button.toLowerCase()}`}>
-                  <td className="button-cell">
-                    <span className="button-name">{press.button}</span>
-                  </td>
-                  <td>{formatDateTime(press.timestamp)}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="2">No hay registros de botones presionados</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+    <div>
+      <h1>Simulador de botones</h1>
+      <h2>Datos de botones presionados:</h2>
+      <ul>
+        {buttonData.map((item, index) => (
+          <li key={index}>{item.button} - {new Date(item.timestamp).toLocaleString()}</li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
